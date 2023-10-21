@@ -1,0 +1,10 @@
+img = cv2.imread('images/1.jpg')
+region_size = np.array([45, 37])
+patch_size = np.array([5, 5])
+bin_size = np.array([15, 3])
+img = cv2.resize(img, (0, 0), fx=1/3, fy=1/3)
+sim = ClacSelfSimilarities(img, region_size, patch_size, bin_size)
+
+theta, rho = sim.theta, sim.rho
+sim1 = sim.cal_self_similarities()
+sim1
