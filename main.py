@@ -22,6 +22,7 @@ class ClacSelfSimilarities(object):
         theta = theta*180/np.pi+180
         rho = np.log(rho)
         return theta, rho
+
     def get_bin(self):
         max_rho = np.max(self.rho)
         bin = {}
@@ -60,7 +61,7 @@ class ClacSelfSimilarities(object):
         return self_similarities
 
     def cal_self_similarities(self, img):
-        lab_image = cv2.cvtColor(img[:,:,::-1], cv2.COLOR_RGB2Lab)
+        lab_image = cv2.cvtColor(img[:, :, ::-1], cv2.COLOR_RGB2Lab)
         img_size = lab_image.shape
         vec_size = self.bin_size[0]*self.bin_size[1]
         self_similarities = np.zeros((img_size[0], img_size[1], vec_size))
@@ -87,21 +88,23 @@ def draw_result(src, sig_score, region_size, scale):
     norm_score = (sig_score-mi)/(ma-mi)
     norm_score = norm_score*255
     norm_score = cv2.resize(norm_score, (0, 0), fx=scale, fy=scale)
-    plt.imshow(norm_score.astype(np.uint8))
-    plt.show()
+    # plt.imshow(norm_score.astype(np.uint8))
+    # plt.show()
 
     x, y = np.where(sig_score == ma)
     rect_img = np.zeros(sig_score.shape)
-    print(rect_img.shape)
+
     rect_img[(x-np.floor(region_size[0]/2).astype(int))[0]:(x+np.floor(region_size[0]/2).astype(int))[0],
              (y-np.floor(region_size[1]/2).astype(int))[0]:(y+np.floor(region_size[1]/2).astype(int))[0]] = 128
     rect_img = cv2.resize(rect_img, (0, 0), fx=scale, fy=scale)
-    print(rect_img.shape)
-    rect_size = src.shape
-    src[:, :, 0] = src[:, :, 0] + rect_img[:rect_size[0], :rect_size[1]].astype(np.uint8)
 
-    plt.imshow(src[:, :, ::-1])
-    plt.show()
+    rect_size = src.shape
+    src[:, :, 0] = src[:, :, 0] + \
+        rect_img[:rect_size[0], :rect_size[1]].astype(np.uint8)
+
+    # plt.imshow(src[:, :, ::-1])
+    # plt.show()
+    return src
 
 
 region_size = np.array([39, 35])
@@ -141,4 +144,10 @@ for i in range(num_imgs):
             sig_score_img[row, col] = np.sum((max_match-avgmatch)/stdmatch)
 
     src = cv2.imread('images/{}.jpg'.format(i+1))
-    draw_result(src, sig_score_img/4, region_size, 3)
+
+    dst = draw_result(src, sig_score_img/4, region_size, 3)
+    plt.subplot(2, 3, i+1)
+    plt.imshow(dst[:, :, ::-1])
+    cv2.imwrite('output/result{}.jpg'.format(i+1), dst)
+
+plt.show()
